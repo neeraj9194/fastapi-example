@@ -24,7 +24,7 @@ class User(Model):
         return self.username
 
 
-#  -------- Remove ----------
+#  ------------------
 #     class PydanticMeta:
 #         computed = ["full_name"]
 #         exclude = ["password_hash"]
