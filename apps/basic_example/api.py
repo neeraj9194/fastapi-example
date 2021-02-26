@@ -1,14 +1,13 @@
 import asyncio
-from concurrent.futures.thread import ThreadPoolExecutor
 from typing import List
 
 import pwnedpasswords
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from passlib.context import CryptContext
 from tortoise.contrib.fastapi import HTTPNotFoundError
 
 from .models import User
-from .schemas import UserResponse, UserCreate, Status
+from .schemas import UserResponse, UserCreate, Status, CommonQueryParams
 
 router = APIRouter(tags=['Users'])
 
@@ -37,11 +36,6 @@ def if_password_secure(password: str) -> bool:
     if result > 0:
         return False
     return True
-
-
-@router.get("/users/", response_model=List[UserResponse])
-async def get_users():
-    return await User.all()
 
 
 @router.post("/user/", response_model=UserResponse)
@@ -78,3 +72,15 @@ async def delete_user(user_id: int):
     if not deleted_count:
         raise HTTPException(status_code=404, detail=f"User {user_id} not found")
     return Status(message=f"Deleted user {user_id}")
+
+
+# Dependency Injection
+# params: CommonQueryParams = Depends(CommonQueryParams)
+@router.get("/users/", response_model=List[UserResponse])
+async def get_users(params: CommonQueryParams = Depends()):
+    return await User.filter(
+        username__icontains=params.search
+    ).limit(
+        params.size
+    ).offset(params.size*params.page)
+

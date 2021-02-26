@@ -25,3 +25,10 @@ class UserCreate(PydanticModel):
 
 class Status(BaseModel):
     message: str
+
+
+class CommonQueryParams:
+    def __init__(self, search: Optional[str] = None, page: int = 0, size: int = 100):
+        self.search = search
+        self.page = page
+        self.size = size
